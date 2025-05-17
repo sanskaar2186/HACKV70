@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - Admin Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <!-- DataTables CSS -->
+    <link href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: #4e73df;
+            color: white;
+        }
+        .nav-link {
+            color: rgba(255,255,255,.8);
+        }
+        .nav-link:hover {
+            color: white;
+        }
+        .card {
+            margin-bottom: 1.5rem;
+        }
+        .badge {
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 sidebar p-3">
+                <h3 class="text-center mb-4">Admin Panel</h3>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/dashboard">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/work-orders">
+                            <i class="fas fa-tasks"></i> Work Orders
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/machines">
+                            <i class="fas fa-cogs"></i> Machines
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/inventory">
+                            <i class="fas fa-boxes"></i> Inventory
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/admin/reports">
+                            <i class="fas fa-file-alt"></i> Reports
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-10 p-4">
+                <h1 class="h3 mb-4 text-gray-800">Reports</h1>
+                
+                <div class="row">
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-primary shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                            Total Reports</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ reports|length }}</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-file-alt fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold text-primary">All Reports</h6>
+                        <div>
+                            <button class="btn btn-success btn-sm" onclick="generateReport('production')">
+                                <i class="fas fa-industry"></i> Production Report
+                            </button>
+                            <button class="btn btn-info btn-sm" onclick="generateReport('inventory')">
+                                <i class="fas fa-boxes"></i> Inventory Report
+                            </button>
+                            <button class="btn btn-warning btn-sm" onclick="generateReport('maintenance')">
+                                <i class="fas fa-tools"></i> Maintenance Report
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="reportsTable" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Report ID</th>
+                                        <th>Type</th>
+                                        <th>Generated By</th>
+                                        <th>Date Generated</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for report in reports %}
+                                    <tr>
+                                        <td>{{ report.id }}</td>
+                                        <td>{{ report.type }}</td>
+                                        <td>{{ report.generated_by }}</td>
+                                        <td>{{ report.created_at }}</td>
+                                        <td>
+                                            <span class="badge badge-{{ 'success' if report.status == 'completed' else 'warning' }}">
+                                                {{ report.status }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="/admin/reports/{{ report.id }}/view" class="btn btn-info btn-sm">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="/admin/reports/{{ report.id }}/download" class="btn btn-success btn-sm">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                            <button class="btn btn-danger btn-sm" onclick="deleteReport({{ report.id }})">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"></script>
+    
+    <script>
+    function generateReport(type) {
+        fetch('/admin/reports/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ type })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error generating report');
+            }
+        });
+    }
+
+    function deleteReport(reportId) {
+        if (confirm('Are you sure you want to delete this report?')) {
+            fetch(`/admin/reports/${reportId}/delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error deleting report');
+                }
+            });
+        }
+    }
+
+    $(document).ready(function() {
+        $('#reportsTable').DataTable();
+    });
+    </script>
+</body>
+</html> 

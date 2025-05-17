@@ -5,96 +5,307 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Supervisor Dashboard - KaamChore</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex">
-                    <div class="flex-shrink-0 flex items-center">
-                        <h1 class="text-xl font-bold text-indigo-600">KaamChore</h1>
-                    </div>
-                </div>
-                <div class="flex items-center">
-                    <span class="text-gray-700 mr-4">Welcome, {{ session['user'].name }}</span>
-                    <a href="{{ url_for('auth.logout') }}" 
-                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
-                        Logout
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <!-- Page Header -->
-        <div class="px-4 py-6 sm:px-0">
-            <h2 class="text-2xl font-bold text-gray-900">Supervisor Dashboard</h2>
-        </div>
-
-        <!-- Dashboard Content -->
-        <div class="mt-8">
-            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                <!-- Workers Card -->
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                            </div>
-                            <div class="ml-5 w-0 flex-1">
-                                <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Total Workers</dt>
-                                    <dd class="text-lg font-medium text-gray-900">0</dd>
-                                </dl>
-                            </div>
+    <div class="min-h-screen">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-lg">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex justify-between h-16">
+                    <div class="flex">
+                        <div class="flex-shrink-0 flex items-center">
+                            <h1 class="text-xl font-bold text-indigo-600">KaamChore</h1>
+                        </div>
+                        <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                            <a href="/supervisor/dashboard" class="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Dashboard
+                            </a>
+                            <a href="/supervisor/work-orders" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Work Orders
+                            </a>
+                            <a href="/supervisor/workers" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Workers
+                            </a>
+                            <a href="/supervisor/machines" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Machines
+                            </a>
+                            <a href="/supervisor/inventory" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Inventory
+                            </a>
                         </div>
                     </div>
+                    <div class="flex items-center">
+                        <span class="text-gray-700 mr-4">Welcome, {{ session['user']['name'] }}</span>
+                        <a href="/auth/logout" class="text-gray-700 hover:text-indigo-600">Logout</a>
+                    </div>
                 </div>
+            </div>
+        </nav>
 
-                <!-- Active Orders Card -->
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="rounded-md p-4 mb-4 {% if category == 'error' %}bg-red-50 text-red-700{% else %}bg-green-50 text-green-700{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <!-- Active Orders -->
                 <div class="bg-white overflow-hidden shadow rounded-lg">
                     <div class="p-5">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
-                                <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                </svg>
+                                <i class="fas fa-tasks text-indigo-600 text-3xl"></i>
                             </div>
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 truncate">Active Orders</dt>
-                                    <dd class="text-lg font-medium text-gray-900">0</dd>
+                                    <dd class="text-lg font-semibold text-gray-900">{{ work_orders|selectattr('status', 'in', ['new', 'in_progress', 'qc'])|list|length }}</dd>
                                 </dl>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Completed Orders Card -->
+                <!-- Active Machines -->
                 <div class="bg-white overflow-hidden shadow rounded-lg">
                     <div class="p-5">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
-                                <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <i class="fas fa-cogs text-indigo-600 text-3xl"></i>
                             </div>
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Completed Orders</dt>
-                                    <dd class="text-lg font-medium text-gray-900">0</dd>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Active Machines</dt>
+                                    <dd class="text-lg font-semibold text-gray-900">{{ machines|selectattr('status', 'equalto', 'active')|list|length }}</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Low Stock Items -->
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-box text-indigo-600 text-3xl"></i>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Low Stock Items</dt>
+                                    <dd class="text-lg font-semibold text-gray-900">
+                                        {% set low_stock_count = 0 %}
+                                        {% for item in inventory %}
+                                            {% if item.quantity < item.reorder_level %}
+                                                {% set low_stock_count = low_stock_count + 1 %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        {{ low_stock_count }}
+                                    </dd>
                                 </dl>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </main>
+
+            <!-- Production Lines Overview -->
+            <div class="bg-white shadow rounded-lg mb-6">
+                <div class="px-4 py-5 sm:px-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Production Lines Overview</h3>
+                </div>
+                <div class="border-t border-gray-200">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+                        {% for line in production_lines %}
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="text-lg font-medium text-gray-900">{{ line.name }}</h4>
+                                    <p class="text-sm text-gray-500">Capacity: {{ line.capacity_per_hour }}/hour</p>
+                                </div>
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full
+                                    {% if line.status == 'active' %}bg-green-100 text-green-800
+                                    {% elif line.status == 'idle' %}bg-yellow-100 text-yellow-800
+                                    {% else %}bg-red-100 text-red-800{% endif %}">
+                                    {{ line.status }}
+                                </span>
+                            </div>
+                            <div class="mt-4">
+                                <h5 class="text-sm font-medium text-gray-700 mb-2">Current Work Orders</h5>
+                                <div class="space-y-2">
+                                    {% for order in work_orders if order.assigned_line_id == line.id %}
+                                    <div class="bg-white rounded p-2 shadow-sm">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm font-medium">{{ order.product_name }}</span>
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full
+                                                {% if order.status == 'completed' %}bg-green-100 text-green-800
+                                                {% elif order.status == 'in_progress' %}bg-yellow-100 text-yellow-800
+                                                {% elif order.status == 'qc' %}bg-blue-100 text-blue-800
+                                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                                {{ order.status|title }}
+                                            </span>
+                                        </div>
+                                        <div class="text-xs text-gray-500 mt-1">
+                                            Quantity: {{ order.quantity }} | Worker: {{ order.worker_name or 'Not Assigned' }}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Machines Status -->
+            <div class="bg-white shadow rounded-lg mb-6">
+                <div class="px-4 py-5 sm:px-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Machines Status</h3>
+                </div>
+                <div class="border-t border-gray-200">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+                        {% for machine in machines %}
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="text-lg font-medium text-gray-900">{{ machine.name }}</h4>
+                                    <p class="text-sm text-gray-500">Type: {{ machine.type }}</p>
+                                </div>
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full
+                                    {% if machine.status == 'active' %}bg-green-100 text-green-800
+                                    {% elif machine.status == 'maintenance' %}bg-yellow-100 text-yellow-800
+                                    {% else %}bg-red-100 text-red-800{% endif %}">
+                                    {{ machine.status }}
+                                </span>
+                            </div>
+                            <div class="mt-4">
+                                <div class="text-sm text-gray-500">
+                                    Last Maintenance: {{ machine.last_maintenance or 'Never' }}
+                                </div>
+                                <div class="text-sm text-gray-500">
+                                    Next Maintenance: {{ machine.next_maintenance or 'Not scheduled' }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventory Status -->
+            <div class="bg-white shadow rounded-lg mb-6">
+                <div class="px-4 py-5 sm:px-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Inventory Status</h3>
+                </div>
+                <div class="border-t border-gray-200">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reorder Level</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                {% for item in inventory %}
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        {{ item.name }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ item.category }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ item.quantity }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ item.reorder_level }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                            {% if item.quantity <= item.reorder_level %}bg-red-100 text-red-800
+                                            {% elif item.quantity <= item.reorder_level * 1.5 %}bg-yellow-100 text-yellow-800
+                                            {% else %}bg-green-100 text-green-800{% endif %}">
+                                            {% if item.quantity <= item.reorder_level %}Low Stock
+                                            {% elif item.quantity <= item.reorder_level * 1.5 %}Medium Stock
+                                            {% else %}In Stock{% endif %}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Work Orders -->
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-4 py-5 sm:px-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Recent Work Orders</h3>
+                </div>
+                <div class="border-t border-gray-200">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Line</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Worker</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                {% for order in work_orders[:5] %}
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ order.order_number }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ order.product_name }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ order.line_name }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                            {% if order.status == 'completed' %}bg-green-100 text-green-800
+                                            {% elif order.status == 'in_progress' %}bg-yellow-100 text-yellow-800
+                                            {% elif order.status == 'qc' %}bg-blue-100 text-blue-800
+                                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                            {{ order.status|title }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ order.worker_name or 'Not Assigned' }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <a href="/supervisor/work-orders" class="text-indigo-600 hover:text-indigo-900">View Details</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Auto-refresh dashboard every 5 minutes
+        setTimeout(function() {
+            window.location.reload();
+        }, 300000);
+    </script>
 </body>
 </html> 

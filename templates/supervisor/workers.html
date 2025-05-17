@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Workers - KaamChore</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-lg">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex justify-between h-16">
+                    <div class="flex">
+                        <div class="flex-shrink-0 flex items-center">
+                            <h1 class="text-xl font-bold text-indigo-600">KaamChore</h1>
+                        </div>
+                        <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                            <a href="/supervisor/dashboard" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Dashboard
+                            </a>
+                            <a href="/supervisor/work-orders" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Work Orders
+                            </a>
+                            <a href="/supervisor/workers" class="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Workers
+                            </a>
+                            <a href="/supervisor/machines" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Machines
+                            </a>
+                            <a href="/supervisor/inventory" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Inventory
+                            </a>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-gray-700 mr-4">Welcome, {{ session['user']['name'] }}</span>
+                        <a href="/auth/logout" class="text-gray-700 hover:text-indigo-600">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="rounded-md p-4 mb-4 {% if category == 'error' %}bg-red-50 text-red-700{% else %}bg-green-50 text-green-700{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Page Header -->
+            <div class="md:flex md:items-center md:justify-between mb-6">
+                <div class="flex-1 min-w-0">
+                    <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+                        Manage Workers
+                    </h2>
+                </div>
+            </div>
+
+            <!-- Workers Overview -->
+            <div class="bg-white shadow rounded-lg mb-6">
+                <div class="px-4 py-5 sm:px-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Production Line Workers</h3>
+                </div>
+                <div class="border-t border-gray-200">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+                        {% for line in production_lines %}
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="text-lg font-medium text-gray-900">{{ line.name }}</h4>
+                                    <p class="text-sm text-gray-500">Line Status: {{ line.status }}</p>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <h5 class="text-sm font-medium text-gray-700 mb-2">Assigned Workers</h5>
+                                <div class="space-y-2">
+                                    {% for shift in worker_shifts if shift.line_id == line.id %}
+                                    <div class="bg-white rounded p-2 shadow-sm">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm font-medium">{{ shift.worker_name }}</span>
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full
+                                                {% if shift.status == 'active' %}bg-green-100 text-green-800
+                                                {% elif shift.status == 'break' %}bg-yellow-100 text-yellow-800
+                                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                                {{ shift.status }}
+                                            </span>
+                                        </div>
+                                        <div class="text-xs text-gray-500 mt-1">
+                                            Current Task: {{ shift.current_task or 'No task assigned' }}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Worker Shifts Table -->
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-4 py-5 sm:px-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Worker Shifts</h3>
+                </div>
+                <div class="border-t border-gray-200">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Worker</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Line</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Task</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                {% for shift in worker_shifts %}
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        {{ shift.worker_name }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ shift.line_name }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                            {% if shift.status == 'active' %}bg-green-100 text-green-800
+                                            {% elif shift.status == 'break' %}bg-yellow-100 text-yellow-800
+                                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                            {{ shift.status }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ shift.current_task or 'No task assigned' }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <button onclick="updateWorkerStatus('{{ shift.id }}')" class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                            Update Status
+                                        </button>
+                                        <button onclick="assignTask('{{ shift.id }}')" class="text-indigo-600 hover:text-indigo-900">
+                                            Assign Task
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function updateWorkerStatus(shiftId) {
+            // TODO: Implement worker status update
+            alert('Update worker status functionality coming soon!');
+        }
+
+        function assignTask(shiftId) {
+            // TODO: Implement task assignment
+            alert('Task assignment functionality coming soon!');
+        }
+    </script>
+</body>
+</html> 
