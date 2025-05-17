@@ -1,11 +1,46 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-from firebase_admin import auth as firebase_auth
-from config.firebase_config import firebase_app
+from werkzeug.security import generate_password_hash, check_password_hash
 from config.supabase_config import supabase
-from models.user import User, UserRole
-from datetime import datetime
+import uuid
 
 auth = Blueprint('auth', __name__)
+
+@auth.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        name = request.form.get('name')
+        role = request.form.get('role', 'worker')  # Default role is worker
+        
+        # Check if user already exists
+        try:
+            existing_user = supabase.table('users').select('*').eq('email', email).execute()
+            if existing_user.data:
+                flash('Email already registered', 'error')
+                return redirect(url_for('auth.register'))
+            
+            # Create new user
+            new_user = {
+                'uid': str(uuid.uuid4()),
+                'email': email,
+                'password_hash': generate_password_hash(password),
+                'name': name,
+                'role': role
+            }
+            
+            result = supabase.table('users').insert(new_user).execute()
+            
+            if result.data:
+                flash('Registration successful! Please login.', 'success')
+                return redirect(url_for('auth.login'))
+            else:
+                flash('Registration failed. Please try again.', 'error')
+                
+        except Exception as e:
+            flash(f'Error during registration: {str(e)}', 'error')
+            
+    return render_template('auth/register.html')
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
@@ -14,95 +49,43 @@ def login():
         password = request.form.get('password')
         
         try:
-            # Verify with Firebase
-            user = firebase_auth.get_user_by_email(email)
+            # Get user by email
+            result = supabase.table('users').select('*').eq('email', email).execute()
             
-            # Get user data from Supabase
-            result = supabase.table('users').select('*').eq('uid', user.uid).execute()
-            user_data = result.data[0] if result.data else None
-            
-            if not user_data:
-                flash('User not found in database', 'error')
-                return redirect(url_for('auth.login'))
-            
-            # Store user in session
-            session['user'] = user_data
-            
-            # Redirect based on role
-            if user_data['role'] == UserRole.ADMIN.value:
-                return redirect(url_for('admin_dashboard'))
-            elif user_data['role'] == UserRole.SUPERVISOR.value:
-                return redirect(url_for('supervisor_dashboard'))
-            elif user_data['role'] == UserRole.WORKER.value:
-                return redirect(url_for('worker_dashboard'))
+            if result.data and len(result.data) > 0:
+                user = result.data[0]
+                if check_password_hash(user['password_hash'], password):
+                    # Store user info in session
+                    session['user'] = {
+                        'id': user['id'],
+                        'uid': user['uid'],
+                        'email': user['email'],
+                        'name': user['name'],
+                        'role': user['role']
+                    }
+                    
+                    # Redirect based on role
+                    if user['role'] == 'admin':
+                        return redirect(url_for('admin.admin_dashboard'))
+                    elif user['role'] == 'supervisor':
+                        return redirect(url_for('supervisor.supervisor_dashboard'))
+                    elif user['role'] == 'worker':
+                        return redirect(url_for('worker.worker_dashboard'))
+                    elif user['role'] == 'client':
+                        return redirect(url_for('client.client_dashboard'))
+                else:
+                    flash('Invalid password', 'error')
             else:
-                return redirect(url_for('client_dashboard'))
+                flash('User not found', 'error')
                 
         except Exception as e:
-            flash('Invalid credentials', 'error')
-            return redirect(url_for('auth.login'))
+            flash(f'Error during login: {str(e)}', 'error')
             
     return render_template('auth/login.html')
 
-@auth.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        try:
-            email = request.form.get('email')
-            password = request.form.get('password')
-            name = request.form.get('name')
-            role = request.form.get('role', UserRole.CLIENT.value)
-
-            if not all([email, password, name]):
-                flash('All fields are required', 'error')
-                return redirect(url_for('auth.register'))
-
-            # Create user in Firebase
-            try:
-                user = firebase_auth.create_user(
-                    email=email,
-                    password=password,
-                    display_name=name
-                )
-            except Exception as e:
-                flash(f'Firebase error: {str(e)}', 'error')
-                return redirect(url_for('auth.register'))
-            
-            # Create user data for Supabase
-            user_data = {
-                'uid': user.uid,
-                'email': email,
-                'name': name,
-                'role': role,
-                'created_at': datetime.utcnow().isoformat()
-            }
-            
-            # Store in Supabase
-            try:
-                result = supabase.table('users').insert(user_data).execute()
-                if not result.data:
-                    # If Supabase insert fails, delete the Firebase user
-                    firebase_auth.delete_user(user.uid)
-                    flash('Error storing user data', 'error')
-                    return redirect(url_for('auth.register'))
-            except Exception as e:
-                # If Supabase insert fails, delete the Firebase user
-                firebase_auth.delete_user(user.uid)
-                flash(f'Supabase error: {str(e)}', 'error')
-                return redirect(url_for('auth.register'))
-            
-            flash('Registration successful! Please login.', 'success')
-            return redirect(url_for('auth.login'))
-                
-        except Exception as e:
-            flash(f'Registration failed: {str(e)}', 'error')
-            return redirect(url_for('auth.register'))
-            
-    return render_template('auth/register.html')
-
 @auth.route('/logout')
 def logout():
-    session.pop('user', None)
+    session.clear()
     flash('Logged out successfully', 'success')
     return redirect(url_for('auth.login'))
 
