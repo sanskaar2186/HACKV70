@@ -1,1 +1,13 @@
 hackvyuha
+*.pyc
+
+*.pyo
+
+*.pyd
+
+*.pyw
+
+firebase-config.json
+
+.env
+
