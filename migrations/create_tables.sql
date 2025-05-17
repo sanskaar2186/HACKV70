@@ -137,3 +137,5 @@ CREATE TABLE reports (
     created_by INTEGER REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ); 
+
+

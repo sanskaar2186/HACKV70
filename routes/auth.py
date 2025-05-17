@@ -2,6 +2,11 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from werkzeug.security import generate_password_hash, check_password_hash
 from config.supabase_config import supabase
 import uuid
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 auth = Blueprint('auth', __name__)
 
@@ -48,37 +53,50 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
         
+        logger.debug(f"Login attempt for email: {email}")
+        
         try:
             # Get user by email
             result = supabase.table('users').select('*').eq('email', email).execute()
+            logger.debug(f"Supabase query result: {result}")
             
             if result.data and len(result.data) > 0:
                 user = result.data[0]
+                logger.debug(f"Found user: {user}")
+                
                 if check_password_hash(user['password_hash'], password):
+                    logger.debug("Password check passed")
                     # Store user info in session
                     session['user'] = {
-                        'id': user['id'],
-                        'uid': user['uid'],
+                        'id': user['uid'],  # Map uid to id in session
                         'email': user['email'],
                         'name': user['name'],
                         'role': user['role']
                     }
+                    logger.debug(f"Session data set: {session['user']}")
                     
                     # Redirect based on role
                     if user['role'] == 'admin':
+                        logger.debug("Redirecting to admin dashboard")
                         return redirect(url_for('admin.admin_dashboard'))
                     elif user['role'] == 'supervisor':
+                        logger.debug("Redirecting to supervisor dashboard")
                         return redirect(url_for('supervisor.supervisor_dashboard'))
                     elif user['role'] == 'worker':
+                        logger.debug("Redirecting to worker dashboard")
                         return redirect(url_for('worker.worker_dashboard'))
                     elif user['role'] == 'client':
+                        logger.debug("Redirecting to client dashboard")
                         return redirect(url_for('client.client_dashboard'))
                 else:
+                    logger.debug("Invalid password")
                     flash('Invalid password', 'error')
             else:
+                logger.debug("User not found")
                 flash('User not found', 'error')
                 
         except Exception as e:
+            logger.error(f"Error during login: {str(e)}", exc_info=True)
             flash(f'Error during login: {str(e)}', 'error')
             
     return render_template('auth/login.html')

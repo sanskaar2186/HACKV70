@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machines Management - KaamChore</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-lg">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex justify-between h-16">
+                    <div class="flex">
+                        <div class="flex-shrink-0 flex items-center">
+                            <h1 class="text-xl font-bold text-indigo-600">KaamChore</h1>
+                        </div>
+                        <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                            <a href="/supervisor/dashboard" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Dashboard
+                            </a>
+                            <a href="/supervisor/work-orders" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Work Orders
+                            </a>
+                            <a href="/supervisor/workers" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Workers
+                            </a>
+                            <a href="/supervisor/machines" class="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Machines
+                            </a>
+                            <a href="/supervisor/inventory" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Inventory
+                            </a>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-gray-700 mr-4">Welcome, {{ session['user']['name'] }}</span>
+                        <a href="/auth/logout" class="text-gray-700 hover:text-indigo-600">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="rounded-md p-4 mb-4 {% if category == 'error' %}bg-red-50 text-red-700{% else %}bg-green-50 text-green-700{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Machines Overview -->
+            <div class="bg-white shadow rounded-lg mb-6">
+                <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Machines Overview</h3>
+                </div>
+                <div class="border-t border-gray-200">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+                        {% for machine in machines %}
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="text-lg font-medium text-gray-900">{{ machine.name }}</h4>
+                                    <p class="text-sm text-gray-500">Type: {{ machine.type }}</p>
+                                    <p class="text-sm text-gray-500">Line: {{ machine.line_name }}</p>
+                                </div>
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full
+                                    {% if machine.status == 'active' %}bg-green-100 text-green-800
+                                    {% elif machine.status == 'maintenance' %}bg-yellow-100 text-yellow-800
+                                    {% else %}bg-red-100 text-red-800{% endif %}">
+                                    {{ machine.status }}
+                                </span>
+                            </div>
+                            <div class="mt-4">
+                                <div class="text-sm text-gray-500">
+                                    Last Maintenance: {{ machine.last_maintenance or 'Never' }}
+                                </div>
+                                <div class="text-sm text-gray-500">
+                                    Next Maintenance: {{ machine.next_maintenance or 'Not scheduled' }}
+                                </div>
+                            </div>
+                            <div class="mt-4 flex space-x-2">
+                                <button class="px-3 py-1 text-sm text-indigo-600 hover:text-indigo-900">
+                                    Schedule Maintenance
+                                </button>
+                                <button class="px-3 py-1 text-sm text-indigo-600 hover:text-indigo-900">
+                                    View History
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html> 

@@ -26,34 +26,6 @@ app.register_blueprint(supervisor)
 app.register_blueprint(worker)
 app.register_blueprint(client)
 
-# Dashboard routes
-@app.route('/admin/dashboard')
-def admin_dashboard():
-    if not session.get('user') or session['user']['role'] != 'admin':
-        flash('Access denied', 'error')
-        return redirect(url_for('auth.login'))
-    return render_template('admin/dashboard.html')
-
-@app.route('/supervisor/dashboard')
-def supervisor_dashboard():
-    if not session.get('user') or session['user']['role'] != 'supervisor':
-        flash('Access denied', 'error')
-        return redirect(url_for('auth.login'))
-    return render_template('supervisor/dashboard.html')
-
-@app.route('/worker/dashboard')
-def worker_dashboard():
-    if not session.get('user') or session['user']['role'] != 'worker':
-        flash('Access denied', 'error')
-        return redirect(url_for('auth.login'))
-    return render_template('worker/dashboard.html')
-
-@app.route('/client/dashboard')
-def client_dashboard():
-    if not session.get('user') or session['user']['role'] != 'client':
-        flash('Access denied', 'error')
-        return redirect(url_for('auth.login'))
-    return render_template('client/dashboard.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
