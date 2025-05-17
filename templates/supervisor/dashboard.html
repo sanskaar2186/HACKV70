@@ -57,23 +57,8 @@
             {% endwith %}
 
             <!-- Quick Stats -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-industry text-indigo-600 text-3xl"></i>
-                            </div>
-                            <div class="ml-5 w-0 flex-1">
-                                <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Active Lines</dt>
-                                    <dd class="text-lg font-semibold text-gray-900">{{ production_lines|length }}</dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <!-- Active Orders -->
                 <div class="bg-white overflow-hidden shadow rounded-lg">
                     <div class="p-5">
                         <div class="flex items-center">
@@ -90,6 +75,7 @@
                     </div>
                 </div>
 
+                <!-- Active Machines -->
                 <div class="bg-white overflow-hidden shadow rounded-lg">
                     <div class="p-5">
                         <div class="flex items-center">
@@ -106,6 +92,7 @@
                     </div>
                 </div>
 
+                <!-- Low Stock Items -->
                 <div class="bg-white overflow-hidden shadow rounded-lg">
                     <div class="p-5">
                         <div class="flex items-center">
@@ -115,7 +102,15 @@
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 truncate">Low Stock Items</dt>
-                                    <dd class="text-lg font-semibold text-gray-900">{{ inventory|selectattr('quantity', 'lt', 'reorder_level')|list|length }}</dd>
+                                    <dd class="text-lg font-semibold text-gray-900">
+                                        {% set low_stock_count = 0 %}
+                                        {% for item in inventory %}
+                                            {% if item.quantity < item.reorder_level %}
+                                                {% set low_stock_count = low_stock_count + 1 %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        {{ low_stock_count }}
+                                    </dd>
                                 </dl>
                             </div>
                         </div>

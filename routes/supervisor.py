@@ -41,8 +41,11 @@ def supervisor_dashboard():
             line_machines = Machine.get_by_line(line['id'])
             machines.extend(line_machines)
         
-        # Get inventory items
+        # Get inventory items and convert to integers
         inventory = Inventory.get_all()
+        for item in inventory:
+            item['quantity'] = int(item['quantity'])
+            item['reorder_level'] = int(item['reorder_level'])
         
         return render_template('supervisor/dashboard.html',
                              production_lines=production_lines,

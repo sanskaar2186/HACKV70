@@ -29,10 +29,10 @@ INSERT INTO inventory_transactions (inventory_id, transaction_type, quantity, wo
 (3, 'out', 5, 1, 'Used in Product A production');
 
 -- Insert machines
-INSERT INTO machines (name, type, status, last_maintenance_date, next_maintenance_date) VALUES
-('Machine 1', 'Assembly', 'running', CURRENT_TIMESTAMP - INTERVAL '2 days', CURRENT_TIMESTAMP + INTERVAL '28 days'),
-('Machine 2', 'Packaging', 'maintenance', CURRENT_TIMESTAMP - INTERVAL '5 days', CURRENT_TIMESTAMP + INTERVAL '25 days'),
-('Machine 3', 'Testing', 'idle', CURRENT_TIMESTAMP - INTERVAL '1 day', CURRENT_TIMESTAMP + INTERVAL '29 days');
+INSERT INTO machines (name, type, status, last_maintenance_date, next_maintenance_date, line_id) VALUES
+('Machine 1', 'Assembly', 'active', CURRENT_TIMESTAMP - INTERVAL '10 days', CURRENT_TIMESTAMP + INTERVAL '20 days', 1),
+('Machine 2', 'Packaging', 'maintenance', CURRENT_TIMESTAMP - INTERVAL '5 days', CURRENT_TIMESTAMP + INTERVAL '25 days', 1),
+('Machine 3', 'Testing', 'idle', CURRENT_TIMESTAMP - INTERVAL '1 day', CURRENT_TIMESTAMP + INTERVAL '29 days', 2);
 
 -- Insert machine logs (depends on machines)
 INSERT INTO machine_logs (machine_id, status, start_time, end_time, notes) VALUES

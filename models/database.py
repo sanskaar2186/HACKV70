@@ -71,14 +71,19 @@ class Inventory:
     @staticmethod
     def get_all():
         response = supabase.table('inventory').select('*').execute()
+        # Convert quantity and reorder_level to integers
+        for item in response.data:
+            item['quantity'] = int(item['quantity'])
+            item['reorder_level'] = int(item['reorder_level'])
         return response.data
 
     @staticmethod
     def get_low_stock():
         # First get all inventory items
         response = supabase.table('inventory').select('*').execute()
-        # Then filter in Python where quantity is less than reorder_level
-        return [item for item in response.data if item['quantity'] < item['reorder_level']]
+        # Convert quantity and reorder_level to integers and filter
+        return [item for item in response.data 
+                if int(item['quantity']) < int(item['reorder_level'])]
 
     @staticmethod
     def update_quantity(item_id, quantity):
@@ -95,6 +100,11 @@ class Machine:
     def get_by_id(machine_id):
         response = supabase.table('machines').select('*').eq('id', machine_id).execute()
         return response.data[0] if response.data else None
+
+    @staticmethod
+    def get_by_line(line_id):
+        response = supabase.table('machines').select('*').eq('line_id', line_id).execute()
+        return response.data
 
     @staticmethod
     def update_status(machine_id, status):

@@ -77,6 +77,7 @@ CREATE TABLE machines (
     name VARCHAR(100) NOT NULL,
     type VARCHAR(50) NOT NULL,
     status VARCHAR(50) NOT NULL,
+    line_id INTEGER REFERENCES production_lines(id),
     last_maintenance_date TIMESTAMP,
     next_maintenance_date TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
