@@ -15,7 +15,16 @@ def index():
 
 # Import and register blueprints
 from routes.auth import auth
+from routes.admin import admin
+from routes.supervisor import supervisor
+from routes.worker import worker
+from routes.client import client
+
 app.register_blueprint(auth)
+app.register_blueprint(admin)
+app.register_blueprint(supervisor)
+app.register_blueprint(worker)
+app.register_blueprint(client)
 
 # Dashboard routes
 @app.route('/admin/dashboard')
