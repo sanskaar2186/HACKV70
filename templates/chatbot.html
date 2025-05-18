@@ -174,9 +174,10 @@
     <div class="sidebar">
         <h2>Manager Dashboard</h2>
         <ul>
-            <li><a href="#">Chat Now</a></li>
-            <li><a href="#">go back</a></li>
-
+            <li><a href="#">Overview</a></li>
+            <li><a href="#">Reports</a></li>
+            <li><a href="#">Analytics</a></li>
+            <li><a href="#">Settings</a></li>
         </ul>
     </div>
     <div class="main-content">
@@ -324,7 +325,7 @@
         return 'There are 3 pending maintenance issues: Conveyor Belt 2, Furnace 1, and Cooling System.';    
     } else if (lower.includes('shift-wise production report')) {
         return 'Shift-wise report: Shift A - 400 units, Shift B - 420 units, Shift C - 430 units.';
-    } else if (lower.includes('assign job j456')) {
+    } else if (lower.includes('assign job user available')) {
         return 'Job J456 has been assigned to Operator Mohan.';
     } else if (lower.includes('plan maintenance for m1')) {
         return 'Maintenance for Machine M1 has been scheduled for next Monday.';
