@@ -3,58 +3,333 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - KaamChore</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Login - Alumilol</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow-x: hidden;
+        }
+        
+        .login-container {
+            position: relative;
+            z-index: 10;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            padding: 2.5rem;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.6s ease-out;
+        }
+        
+        .floating-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+        
+        .shape {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            z-index: 1;
+        }
+        
+        .login-title {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.6s ease-out;
+            font-weight: 800;
+        }
+        
+        .login-subtitle {
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.6s ease-out;
+            transition-delay: 0.1s;
+        }
+        
+        .input-field {
+            position: relative;
+            margin-bottom: 1.5rem;
+            transform: translateX(-20px);
+            opacity: 0;
+            transition: all 0.5s ease-out;
+        }
+        
+        .input-field:nth-child(2) {
+            transition-delay: 0.1s;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        
+        input:focus {
+            border-color: #764ba2;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.25);
+        }
+        
+        .submit-btn {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+            transition: all 0.3s;
+            opacity: 0;
+            transform: translateY(10px);
+            transition-delay: 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.5s;
+        }
+        
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+        
+        .submit-btn:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: all 0.6s ease-out;
+        }
+        
+        .alert-error {
+            background-color: #FEE2E2;
+            border: 1px solid #FECACA;
+            color: #DC2626;
+        }
+        
+        .alert-success {
+            background-color: #D1FAE5;
+            border: 1px solid #A7F3D0;
+            color: #059669;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(118, 75, 162, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(118, 75, 162, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(118, 75, 162, 0);
+            }
+        }
+        
+        .register-link {
+            color: #764ba2;
+            font-weight: 600;
+            text-decoration: none;
+            position: relative;
+        }
+        
+        .register-link::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transform: scaleX(0);
+            transform-origin: bottom right;
+            transition: transform 0.3s ease-out;
+        }
+        
+        .register-link:hover::after {
+            transform: scaleX(1);
+            transform-origin: bottom left;
+        }
+    </style>
 </head>
-<body class="bg-gray-50">
+<body>
+    <div class="floating-shapes" id="particles"></div>
+    
     <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-md w-full space-y-8">
-            <div>
-                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                    Login to KaamChore
-                </h2>
-                <p class="mt-2 text-center text-sm text-gray-600">
-                    Or
-                    <a href="{{ url_for('auth.register') }}" class="font-medium text-indigo-600 hover:text-indigo-500">
-                        create a new account
-                    </a>
-                </p>
-            </div>
+        <div class="max-w-md w-full">
+            <div class="login-container">
+                <div>
+                    <h2 class="login-title text-center text-3xl font-extrabold">
+                        Login to Alumilol
+                    </h2>
+                    <p class="login-subtitle mt-2 text-center text-sm text-gray-600">
+                        Or
+                        <a href="{{ url_for('auth.register') }}" class="register-link">
+                            create a new account
+                        </a>
+                    </p>
+                </div>
 
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="rounded-md p-4 {% if category == 'error' %}bg-red-50 text-red-700{% else %}bg-green-50 text-green-700{% endif %}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert {% if category == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
 
-            <form class="mt-8 space-y-6" action="{{ url_for('auth.login') }}" method="POST">
-                <div class="rounded-md shadow-sm -space-y-px">
-                    <div>
-                        <label for="email" class="sr-only">Email address</label>
+                <form class="mt-8" action="{{ url_for('auth.login') }}" method="POST">
+                    <div class="input-field">
                         <input id="email" name="email" type="email" required 
-                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
                             placeholder="Email address">
                     </div>
-                    <div>
-                        <label for="password" class="sr-only">Password</label>
+                    <div class="input-field">
                         <input id="password" name="password" type="password" required 
-                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
                             placeholder="Password">
                     </div>
-                </div>
 
-                <div>
-                    <button type="submit" 
-                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Sign in
-                    </button>
-                </div>
-            </form>
+                    <div>
+                        <button type="submit" class="submit-btn pulse">
+                            Sign in
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
+
+    <script>
+        // Create animated floating shapes in the background
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const particleCount = 20;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const size = Math.random() * 100 + 50;
+                const shape = document.createElement('div');
+                shape.classList.add('shape');
+                shape.style.width = `${size}px`;
+                shape.style.height = `${size}px`;
+                shape.style.left = `${Math.random() * 100}%`;
+                shape.style.top = `${Math.random() * 100}%`;
+                shape.style.opacity = Math.random() * 0.3;
+                
+                container.appendChild(shape);
+                
+                animateShape(shape);
+            }
+        }
+        
+        function animateShape(shape) {
+            const duration = Math.random() * 60000 + 30000; // 30-90 seconds
+            const xDistance = Math.random() * 100 - 50;
+            const yDistance = Math.random() * 100 - 50;
+            
+            anime({
+                targets: shape,
+                translateX: xDistance,
+                translateY: yDistance,
+                scale: [
+                    { value: Math.random() + 0.5, duration: duration / 2, easing: 'easeInOutSine' },
+                    { value: Math.random() + 0.5, duration: duration / 2, easing: 'easeInOutSine' }
+                ],
+                opacity: [
+                    { value: Math.random() * 0.3, duration: duration / 2, easing: 'easeInOutQuad' },
+                    { value: Math.random() * 0.3, duration: duration / 2, easing: 'easeInOutQuad' }
+                ],
+                duration: duration,
+                complete: function() {
+                    animateShape(shape);
+                },
+                easing: 'linear'
+            });
+        }
+        
+        // Animate UI elements entry
+        function animateUI() {
+            setTimeout(() => {
+                document.querySelector('.login-container').style.opacity = '1';
+                document.querySelector('.login-container').style.transform = 'translateY(0)';
+            }, 300);
+            
+            setTimeout(() => {
+                document.querySelector('.login-title').style.opacity = '1';
+                document.querySelector('.login-title').style.transform = 'translateY(0)';
+            }, 600);
+            
+            setTimeout(() => {
+                document.querySelector('.login-subtitle').style.opacity = '1';
+                document.querySelector('.login-subtitle').style.transform = 'translateY(0)';
+            }, 800);
+            
+            const inputFields = document.querySelectorAll('.input-field');
+            inputFields.forEach((field, index) => {
+                setTimeout(() => {
+                    field.style.opacity = '1';
+                    field.style.transform = 'translateX(0)';
+                }, 1000 + (index * 200));
+            });
+            
+            setTimeout(() => {
+                document.querySelector('.submit-btn').style.opacity = '1';
+                document.querySelector('.submit-btn').style.transform = 'translateY(0)';
+            }, 1500);
+            
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                alert.style.opacity = '1';
+                alert.style.transform = 'scale(1)';
+            });
+        }
+        
+        // Initialize animations
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            animateUI();
+        });
+    </script>
 </body>
-</html> 
+</html>

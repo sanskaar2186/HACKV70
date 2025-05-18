@@ -1,10 +1,12 @@
-from flask import Blueprint, render_template, session, redirect, url_for, flash, request, jsonify, send_file
+from flask import Blueprint, render_template, session, redirect, url_for, flash, request, jsonify, send_file, Response
 from models.database import (
     ProductionLine, WorkOrder, Inventory, Machine,
     WorkerShift, WorkerProductivity, KPIMetrics, Report
 )
 from datetime import datetime, timedelta
 from functools import wraps
+import csv
+from io import StringIO
 
 admin = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -71,7 +73,8 @@ def edit_work_order(order_id):
         data = request.form.to_dict()
         WorkOrder.update(order_id, data)
         return redirect(url_for('admin.work_orders'))
-    return render_template('admin/work_orders/edit.html', order=order)
+    production_lines = ProductionLine.get_all()
+    return render_template('admin/work_orders/edit.html', order=order, production_lines=production_lines)
 
 @admin.route('/work-orders/<int:order_id>/delete', methods=['POST'])
 @admin_required
@@ -159,21 +162,27 @@ def update_inventory_stock(item_id):
 @admin.route('/reports')
 @admin_required
 def reports():
-    reports = Report.get_reports()
+    reports = Report.get_all()
     return render_template('admin/reports.html', reports=reports)
 
 @admin.route('/reports/generate', methods=['POST'])
 @admin_required
 def generate_report():
-    data = request.get_json()
-    report_data = {
-        'type': data['type'],
-        'generated_by': session.get('user_id'),
-        'created_at': datetime.now().isoformat(),
-        'status': 'completed'
-    }
-    Report.save_report(report_data)
-    return jsonify({'success': True})
+    try:
+        data = request.get_json()
+        if not data or 'type' not in data:
+            return jsonify({'success': False, 'error': 'Report type is required'})
+
+        report_type = data.get('type')
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+        
+        report = Report.generate_report(report_type, start_date, end_date)
+        if report:
+            return jsonify({'success': True, 'report': report})
+        return jsonify({'success': False, 'error': 'Failed to generate report'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
 
 @admin.route('/reports/<int:report_id>/view')
 @admin_required
@@ -184,15 +193,54 @@ def view_report(report_id):
 @admin.route('/reports/<int:report_id>/download')
 @admin_required
 def download_report(report_id):
-    report = Report.get_by_id(report_id)
-    # Generate and return the report file
-    return send_file(report.file_path, as_attachment=True)
+    try:
+        report = Report.get_by_id(report_id)
+        if not report:
+            return jsonify({'success': False, 'error': 'Report not found'})
+        
+        # Get data based on report type
+        if report['type'] == 'production':
+            data = WorkOrder.get_all()
+            filename = f'production_report_{report_id}.csv'
+        elif report['type'] == 'inventory':
+            data = Inventory.get_all()
+            filename = f'inventory_report_{report_id}.csv'
+        elif report['type'] == 'machines':
+            data = Machine.get_all()
+            filename = f'machines_report_{report_id}.csv'
+        else:
+            return jsonify({'success': False, 'error': 'Invalid report type'})
+        
+        # Create CSV
+        output = StringIO()
+        writer = csv.writer(output)
+        
+        # Write headers
+        if data:
+            writer.writerow(data[0].keys())
+            # Write data
+            for row in data:
+                writer.writerow(row.values())
+        
+        # Prepare response
+        output.seek(0)
+        return Response(
+            output,
+            mimetype='text/csv',
+            headers={
+                'Content-Disposition': f'attachment; filename={filename}'
+            }
+        )
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
 
 @admin.route('/reports/<int:report_id>/delete', methods=['POST'])
 @admin_required
 def delete_report(report_id):
-    Report.delete(report_id)
-    return jsonify({'success': True})
+    report = Report.delete(report_id)
+    if report:
+        return jsonify({'success': True})
+    return jsonify({'success': False, 'error': 'Failed to delete report'})
 
 # API endpoints for real-time updates
 @admin.route('/api/production-status')

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Dashboard Chatbot with Voice Assistant</title>
+    <style>
+        body {
+            background: #f4f6fa;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 240px;
+            background: #2c3e50;
+            color: #fff;
+            padding: 30px 20px;
+        }
+        .sidebar h2 {
+            margin-bottom: 30px;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar ul li {
+            margin-bottom: 18px;
+        }
+        .sidebar ul li a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.1em;
+        }
+        .main-content {
+            flex: 1;
+            padding: 40px 30px;
+            display: flex;
+            flex-direction: column;
+        }
+        .stats-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: #fff;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+            flex: 1;
+        }
+        .stat-card h3 {
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+        .stat-card p {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .quick-action-btn {
+            padding: 10px 18px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.3s;
+        }
+        .quick-action-btn:hover {
+            background: #0056b3;
+        }
+        .chat-container {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+        }
+        .chat-header {
+            padding: 18px 24px;
+            background: #2c3e50;
+            color: #fff;
+            font-size: 1.2em;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+        .message {
+            margin-bottom: 16px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .message.user {
+            justify-content: flex-end;
+        }
+        .message-content {
+            max-width: 70%;
+            padding: 12px 18px;
+            border-radius: 15px;
+            background: #e9ecef;
+        }
+        .message.user .message-content {
+            background: #007bff;
+            color: #fff;
+        }
+        .chat-input {
+            padding: 18px 24px;
+            background: #fff;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            outline: none;
+            font-size: 1em;
+        }
+        .chat-input button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s;
+        }
+        .chat-input button:hover {
+            background: #0056b3;
+        }
+        #micBtn {
+            background: #dc3545;
+            color: white;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+        #micBtn.listening {
+            background: #28a745;
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <div class="sidebar">
+        <h2>Manager Dashboard</h2>
+        <ul>
+            <li><a href="#">Overview</a></li>
+            <li><a href="#">Reports</a></li>
+            <li><a href="#">Analytics</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="stats-container">
+            <div class="stat-card">
+                <h3>Production Status</h3>
+                <p>85% Capacity</p>
+            </div>
+            <div class="stat-card">
+                <h3>Inventory Levels</h3>
+                <p>65% Stock Level</p>
+            </div>
+            <div class="stat-card">
+                <h3>Quality Metrics</h3>
+                <p>98.5% Compliance</p>
+            </div>
+        </div>
+        <div class="quick-actions">
+            <button class="quick-action-btn" onclick="askQuestion('How many units produced today?')">🏭 Production Status</button>
+            <button class="quick-action-btn" onclick="askQuestion('Approve dispatch of order #D125')">🧾 Approve Tasks</button>
+            <button class="quick-action-btn" onclick="askQuestion('Show pending maintenance issues')">🔔 Alerts</button>
+            <button class="quick-action-btn" onclick="askQuestion('Give me shift-wise production report for today')">📊 Reports</button>
+            <button class="quick-action-btn" onclick="askQuestion('Assign job J456 to Operator Mohan')">📥 Delegation</button>
+            <button class="quick-action-btn" onclick="askQuestion('Plan maintenance for M1 next Monday')">📅 Scheduling</button>
+        </div>
+        <div class="chat-container">
+            <div class="chat-header">AI Assistant</div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="message">
+                    <div class="message-content">
+                        Hello! I'm your metal industry management assistant. How can I help you today?
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="userInput" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
+                <button id="micBtn" onclick="toggleMic()" title="Speak"><span id="micIcon">🎤</span></button>
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // Voice recognition setup
+    let recognizing = false;
+    let recognition;
+    const micBtn = document.getElementById('micBtn');
+    if ('webkitSpeechRecognition' in window) {
+        recognition = new webkitSpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+        recognition.onstart = function() {
+            recognizing = true;
+            micBtn.classList.add('listening');
+        };
+        recognition.onend = function() {
+            recognizing = false;
+            micBtn.classList.remove('listening');
+        };
+        recognition.onerror = function(event) {
+            recognizing = false;
+            micBtn.classList.remove('listening');
+            alert('Microphone error: ' + event.error + '\nPlease check your microphone permissions and try again.');
+            console.error('Speech recognition error:', event);
+        };
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            document.getElementById('userInput').value = transcript;
+            sendMessage();
+        };
+    } else {
+        micBtn.disabled = true;
+        micBtn.title = 'Voice assistant not supported in this browser. Use Google Chrome.';
+        micBtn.style.opacity = 0.5;
+        micBtn.style.cursor = 'not-allowed';
+        micBtn.onclick = function() {
+            alert('Voice assistant is not supported in this browser. Please use Google Chrome.');
+        };
+    }
+    function toggleMic() {
+        if (!recognition) {
+            alert('Voice assistant is not supported in this browser. Please use Google Chrome.');
+            return;
+        }
+        if (recognizing) {
+            recognition.stop();
+        } else {
+            try {
+                recognition.start();
+            } catch (e) {
+                alert('Could not start voice recognition. Please check your microphone and permissions.');
+                console.error(e);
+            }
+        }
+    }
+    function sendMessage() {
+        const input = document.getElementById('userInput');
+        const message = input.value.trim();
+        if (message) {
+            addMessage(message, true);
+            processMessage(message);
+            input.value = '';
+        }
+    }
+    function handleKeyPress(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    }
+    function addMessage(message, isUser) {
+        const chatMessages = document.getElementById('chatMessages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isUser ? 'user' : ''}`;
+        const messageContent = document.createElement('div');
+        messageContent.className = 'message-content';
+        messageContent.textContent = message;
+        messageDiv.appendChild(messageContent);
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    function processMessage(message) {
+        setTimeout(() => {
+            let response = getAIResponse(message);
+            addMessage(response, false);
+            speakResponse(response);
+        }, 700);
+    }
+    function getAIResponse(message) {
+        const lower = message.toLowerCase();
+        if (lower.includes('how many units produced')) {
+            return 'Today, 1,250 units have been produced across all shifts.';
+        } else if (lower.includes('approve dispatch of order')) {
+            return 'Order #D125 has been approved for dispatch.';
+        } else if (lower.includes('pending maintenance')) {
+            return 'There are 3 pending maintenance issues: Conveyor Belt 2, Furnace 1, and Cooling System.';
+        } else if (lower.includes('shift-wise production report')) {
+            return 'Shift-wise report: Shift A - 400 units, Shift B - 420 units, Shift C - 430 units.';
+        } else if (lower.includes('assign job j456')) {
+            return 'Job J456 has been assigned to Operator Mohan.';
+        } else if (lower.includes('plan maintenance for m1')) {
+            return 'Maintenance for Machine M1 has been scheduled for next Monday.';
+        } else if (lower.includes('production status')) {
+            return 'Production is running at 85% capacity today.';
+        } else if (lower.includes('inventory')) {
+            return 'Current inventory is at 65% stock level.';
+        } else if (lower.includes('quality')) {
+            return 'Quality compliance is at 98.5% for this month.';
+        } else {
+            return "I'm sorry, I didn't understand that. Could you please rephrase or try one of the quick actions above?";
+        }
+    }
+    function speakResponse(text) {
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+    function askQuestion(question) {
+        const input = document.getElementById('userInput');
+        input.value = question;
+        sendMessage();
+    }
+</script>
+</body>
+</html>

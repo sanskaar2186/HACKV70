@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}My Reports{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3">My Reports</h1>
+        </div>
+    </div>
+
+    <!-- Productivity Overview -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Productivity Overview (Last 30 Days)</h5>
+                </div>
+                <div class="card-body">
+                    {% if productivity %}
+                    <div class="row">
+                        <!-- Tasks Completed -->
+                        <div class="col-md-3 mb-4">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <h6 class="card-title">Tasks Completed</h6>
+                                    <h2 class="mb-0">{{ productivity|selectattr('status', 'equalto', 'completed')|list|length }}</h2>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Average Output -->
+                        <div class="col-md-3 mb-4">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h6 class="card-title">Average Output</h6>
+                                    <h2 class="mb-0">
+                                        {% set total_output = productivity|sum(attribute='output_count') %}
+                                        {% set total_tasks = productivity|length %}
+                                        {{ (total_output / total_tasks if total_tasks > 0 else 0)|round|int }}
+                                    </h2>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Efficiency Rate -->
+                        <div class="col-md-3 mb-4">
+                            <div class="card bg-info text-white">
+                                <div class="card-body">
+                                    <h6 class="card-title">Efficiency Rate</h6>
+                                    <h2 class="mb-0">
+                                        {% set completed_tasks = productivity|selectattr('status', 'equalto', 'completed')|list|length %}
+                                        {{ ((completed_tasks / total_tasks * 100) if total_tasks > 0 else 0)|round|int }}%
+                                    </h2>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quality Score -->
+                        <div class="col-md-3 mb-4">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body">
+                                    <h6 class="card-title">Quality Score</h6>
+                                    <h2 class="mb-0">
+                                        {% set quality_score = productivity|sum(attribute='quality_score') %}
+                                        {{ ((quality_score / total_tasks) if total_tasks > 0 else 0)|round|int }}%
+                                    </h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Statistics -->
+                    <div class="table-responsive mt-4">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Task</th>
+                                    <th>Output Count</th>
+                                    <th>Status</th>
+                                    <th>Quality Score</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in productivity|sort(attribute='created_at', reverse=true) %}
+                                <tr>
+                                    <td>{{ record.created_at|datetime }}</td>
+                                    <td>{{ record.task_name }}</td>
+                                    <td>{{ record.output_count }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ record.status|status_color }}">
+                                            {{ record.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar bg-{{ 'success' if record.quality_score >= 90 else 'warning' if record.quality_score >= 70 else 'danger' }}" 
+                                                 role="progressbar" 
+                                                 style="width: {{ record.quality_score }}%"
+                                                 aria-valuenow="{{ record.quality_score }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                                {{ record.quality_score }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ record.notes|default('None') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No productivity data available</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Trends -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Performance Trends</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="productivityChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% if productivity %}
+    const ctx = document.getElementById('productivityChart').getContext('2d');
+    const productivityData = {{ productivity|tojson }};
+    
+    // Process data for chart
+    const dates = productivityData.map(record => new Date(record.created_at).toLocaleDateString());
+    const outputCounts = productivityData.map(record => record.output_count);
+    const qualityScores = productivityData.map(record => record.quality_score);
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Output Count',
+                data: outputCounts,
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }, {
+                label: 'Quality Score',
+                data: qualityScores,
+                borderColor: 'rgb(255, 99, 132)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    {% endif %}
+});
+</script>
+{% endblock %}
+{% endblock %} 
