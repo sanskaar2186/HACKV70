@@ -1,100 +1,350 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supervisor Dashboard - KaamChore</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex">
-                    <div class="flex-shrink-0 flex items-center">
-                        <h1 class="text-xl font-bold text-indigo-600">KaamChore</h1>
-                    </div>
+{% extends "base.html" %}
+
+{% block title %}Worker Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Current Shift Status -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Today's Shift</h5>
                 </div>
-                <div class="flex items-center">
-                    <span class="text-gray-700 mr-4">Welcome, {{ session['user'].name }}</span>
-                    <a href="{{ url_for('auth.logout') }}" 
-                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
-                        Logout
-                    </a>
+                <div class="card-body">
+                    {% if current_shift %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Start Time:</strong> {{ current_shift.start_time|datetime }}</p>
+                            <p><strong>End Time:</strong> {{ current_shift.end_time|datetime }}</p>
+                            <p><strong>Production Line:</strong> {{ current_shift.line_name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Status:</strong> 
+                                <span class="badge bg-{{ current_shift.status|status_color }}">
+                                    {{ current_shift.status|title }}
+                                </span>
+                            </p>
+                            <p><strong>Break Time:</strong> {{ current_shift.break_time|default('Not scheduled') }}</p>
+                            {% if current_shift.status == 'scheduled' %}
+                            <button type="button" class="btn btn-success" onclick="startShift()">
+                                <i class="fas fa-play"></i> Start Shift
+                            </button>
+                            {% elif current_shift.status == 'in_progress' %}
+                            <button type="button" class="btn btn-danger" onclick="endShift()">
+                                <i class="fas fa-stop"></i> End Shift
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No shift scheduled for today</p>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
-    </nav>
+    </div>
 
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <!-- Page Header -->
-        <div class="px-4 py-6 sm:px-0">
-            <h2 class="text-2xl font-bold text-gray-900">Supervisor Dashboard</h2>
-        </div>
-
-        <!-- Dashboard Content -->
-        <div class="mt-8">
-            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                <!-- Workers Card -->
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                            </div>
-                            <div class="ml-5 w-0 flex-1">
-                                <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Total Workers</dt>
-                                    <dd class="text-lg font-medium text-gray-900">0</dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
+    <!-- Today's Goals -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Today's Goals</h5>
                 </div>
+                <div class="card-body">
+                    {% if active_tasks %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Task</th>
+                                    <th>Target</th>
+                                    <th>Current</th>
+                                    <th>Progress</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in active_tasks %}
+                                <tr>
+                                    <td>{{ task.product_name }}</td>
+                                    <td>{{ task.quantity }}</td>
+                                    <td>{{ task.output_count|default(0) }}</td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-{{ task.status|status_color }}" 
+                                                 role="progressbar" 
+                                                 style="width: {{ (task.output_count / task.quantity * 100)|round|int }}%"
+                                                 aria-valuenow="{{ task.output_count|default(0) }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="{{ task.quantity }}">
+                                                {{ (task.output_count / task.quantity * 100)|round|int }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ task.status|status_color }}">
+                                            {{ task.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-primary" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#updateOutputModal{{ task.id }}">
+                                                <i class="fas fa-edit"></i> Update
+                                            </button>
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-success" 
+                                                    onclick="completeTask( {{ task.id }})">
+                                                <i class="fas fa-check"></i> Complete
+                                            </button>
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-danger" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#reportIssueModal{{ task.id }}">
+                                                <i class="fas fa-exclamation-triangle"></i> Issue
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
 
-                <!-- Active Orders Card -->
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                </svg>
-                            </div>
-                            <div class="ml-5 w-0 flex-1">
-                                <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Active Orders</dt>
-                                    <dd class="text-lg font-medium text-gray-900">0</dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                                <!-- Update Output Modal -->
+                                <div class="modal fade" id="updateOutputModal{{ task.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Update Output Count</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <form action="{{ url_for('worker.update_task_progress') }}" method="POST">
+                                                <div class="modal-body">
+                                                    <input type="hidden" name="task_id" value="{{ task.id }}">
+                                                    <div class="mb-3">
+                                                        <label for="output_count" class="form-label">Output Count</label>
+                                                        <input type="number" 
+                                                               class="form-control" 
+                                                               id="output_count" 
+                                                               name="output_count" 
+                                                               min="0" 
+                                                               max="{{ task.quantity }}" 
+                                                               value="{{ task.output_count|default(0) }}" 
+                                                               required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="notes" class="form-label">Notes</label>
+                                                        <textarea class="form-control" 
+                                                                  id="notes" 
+                                                                  name="notes" 
+                                                                  rows="3">{{ task.notes|default('') }}</textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-primary">Update</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
 
-                <!-- Completed Orders Card -->
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </div>
-                            <div class="ml-5 w-0 flex-1">
-                                <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Completed Orders</dt>
-                                    <dd class="text-lg font-medium text-gray-900">0</dd>
-                                </dl>
-                            </div>
-                        </div>
+                                <!-- Report Issue Modal -->
+                                <div class="modal fade" id="reportIssueModal{{ task.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Report Issue</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <form action="{{ url_for('worker.report_issue') }}" method="POST">
+                                                <div class="modal-body">
+                                                    <input type="hidden" name="task_id" value="{{ task.id }}">
+                                                    <div class="mb-3">
+                                                        <label for="issue_type" class="form-label">Issue Type</label>
+                                                        <select class="form-select" id="issue_type" name="issue_type" required>
+                                                            <option value="">Select issue type</option>
+                                                            <option value="machine">Machine Problem</option>
+                                                            <option value="material">Material Issue</option>
+                                                            <option value="other">Other</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="description" class="form-label">Description</label>
+                                                        <textarea class="form-control" 
+                                                                  id="description" 
+                                                                  name="description" 
+                                                                  rows="3" 
+                                                                  required 
+                                                                  placeholder="Please describe the issue in detail..."></textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-warning">Report Issue</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No active tasks for today</p>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
-    </main>
-</body>
-</html> 
+    </div>
+
+    <!-- Assigned Machines -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Assigned Machines</h5>
+                </div>
+                <div class="card-body">
+                    {% if assigned_machines %}
+                    <div class="row">
+                        {% for machine in assigned_machines %}
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ machine.name }}</h5>
+                                    <p class="card-text">
+                                        <strong>Status:</strong> 
+                                        <span class="badge bg-{{ machine.status|status_color }}">
+                                            {{ machine.status|title }}
+                                        </span>
+                                    </p>
+                                    <p class="card-text">
+                                        <strong>Last Maintenance:</strong><br>
+                                        {{ machine.last_maintenance_date|default('Never')|datetime }}
+                                    </p>
+                                    <p class="card-text">
+                                        <strong>Next Maintenance:</strong><br>
+                                        {{ machine.next_maintenance_date|default('Not scheduled')|datetime }}
+                                    </p>
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-danger" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#reportMachineIssueModal{{ machine.id }}">
+                                        <i class="fas fa-exclamation-triangle"></i> Report Issue
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Report Machine Issue Modal -->
+                            <div class="modal fade" id="reportMachineIssueModal{{ machine.id }}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Report Machine Issue</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <form action="{{ url_for('worker.report_machine_issue', machine_id=machine.id) }}" method="POST">
+                                            <div class="modal-body">
+                                                <div class="mb-3">
+                                                    <label for="description" class="form-label">Issue Description</label>
+                                                    <textarea class="form-control" 
+                                                              id="description" 
+                                                              name="description" 
+                                                              rows="3" 
+                                                              required 
+                                                              placeholder="Please describe the machine issue in detail..."></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-warning">Report Issue</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-cogs fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No machines assigned</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+function startShift() {
+    fetch("{{ url_for('worker.start_shift') }}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Failed to start shift: ' + data.error);
+        }
+    });
+}
+
+function endShift() {
+    fetch("{{ url_for('worker.end_shift') }}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Failed to end shift: ' + data.error);
+        }
+    });
+}
+
+function completeTask(taskId) {
+    if (confirm('Are you sure you want to mark this task as complete?')) {
+        fetch("{{ url_for('worker.update_task_status', task_id=0) }}".replace('0', taskId), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                status: 'completed'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Failed to complete task: ' + data.error);
+            }
+        });
+    }
+}
+</script>
+{% endblock %}
+{% endblock %} 

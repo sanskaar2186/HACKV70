@@ -68,7 +68,7 @@ def login():
                     logger.debug("Password check passed")
                     # Store user info in session
                     session['user'] = {
-                        'id': user['uid'],  # Map uid to id in session
+                        'id': user['uid'],  # Use uid instead of id
                         'email': user['email'],
                         'name': user['name'],
                         'role': user['role']
@@ -84,10 +84,10 @@ def login():
                         return redirect(url_for('supervisor.supervisor_dashboard'))
                     elif user['role'] == 'worker':
                         logger.debug("Redirecting to worker dashboard")
-                        return redirect(url_for('worker.worker_dashboard'))
+                        return redirect(url_for('worker.dashboard'))
                     elif user['role'] == 'client':
                         logger.debug("Redirecting to client dashboard")
-                        return redirect(url_for('client.client_dashboard'))
+                        return redirect(url_for('client.dashboard'))
                 else:
                     logger.debug("Invalid password")
                     flash('Invalid password', 'error')

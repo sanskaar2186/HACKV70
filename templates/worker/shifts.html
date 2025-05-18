@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}My Shifts{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>My Shifts</h2>
+    
+    <!-- Current Shift Card -->
+    {% if current_shift %}
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Current Shift</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Start Time</h6>
+                            <p>{{ current_shift.start_time|datetime }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>End Time</h6>
+                            <p>{{ current_shift.end_time|datetime }}</p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <h6>Status</h6>
+                            <span class="badge bg-{{ current_shift.status|status_color }}">
+                                {{ current_shift.status|title }}
+                            </span>
+                        </div>
+                    </div>
+                    {% if current_shift.status == 'scheduled' %}
+                    <div class="mt-3">
+                        <button class="btn btn-primary" id="startShiftBtn">Start Shift</button>
+                    </div>
+                    {% elif current_shift.status == 'in_progress' %}
+                    <div class="mt-3">
+                        <button class="btn btn-danger" id="endShiftBtn">End Shift</button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Upcoming Shifts -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Upcoming Shifts</h5>
+                </div>
+                <div class="card-body">
+                    {% if shifts %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Start Time</th>
+                                        <th>End Time</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for shift in shifts %}
+                                        {% if shift.id != current_shift.id %}
+                                        <tr>
+                                            <td>{{ shift.start_time|date }}</td>
+                                            <td>{{ shift.start_time|time }}</td>
+                                            <td>{{ shift.end_time|time }}</td>
+                                            <td>
+                                                <span class="badge bg-{{ shift.status|status_color }}">
+                                                    {{ shift.status|title }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No upcoming shifts scheduled.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const startShiftBtn = document.getElementById('startShiftBtn');
+    const endShiftBtn = document.getElementById('endShiftBtn');
+
+    if (startShiftBtn) {
+        startShiftBtn.addEventListener('click', function() {
+            fetch('/worker/start-shift', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error starting shift: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error starting shift');
+            });
+        });
+    }
+
+    if (endShiftBtn) {
+        endShiftBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to end your shift?')) {
+                fetch('/worker/end-shift', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error ending shift: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error ending shift');
+                });
+            }
+        });
+    }
+});
+</script>
+{% endblock %} 

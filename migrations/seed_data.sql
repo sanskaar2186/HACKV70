@@ -1,8 +1,8 @@
 -- First, insert sample users (required for foreign keys)
 INSERT INTO users (email, password_hash, name, role) VALUES
-('admin@kaamchore.com', 'hashed_password_here', 'Admin User', 'admin'),
-('worker1@kaamchore.com', 'hashed_password_here', 'Worker One', 'worker'),
-('worker2@kaamchore.com', 'hashed_password_here', 'Worker Two', 'worker');
+('admin@alumilol.com', 'hashed_password_here', 'Admin User', 'admin'),
+('worker1@alumilol.com', 'hashed_password_here', 'Worker One', 'worker'),
+('worker2@alumilol.com', 'hashed_password_here', 'Worker Two', 'worker');
 
 -- Then insert production lines (required for work orders)
 INSERT INTO production_lines (name, status, capacity_per_hour) VALUES

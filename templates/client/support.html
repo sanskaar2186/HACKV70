@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Contact Support{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Contact Support</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('client.support') }}">
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Subject</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="subject" 
+                                   name="subject" 
+                                   required 
+                                   placeholder="What is your inquiry about?">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Message</label>
+                            <textarea class="form-control" 
+                                      id="message" 
+                                      name="message" 
+                                      rows="5" 
+                                      required 
+                                      placeholder="Please describe your issue or question in detail..."></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="order" class="form-label">Related Order (Optional)</label>
+                            <select class="form-select" id="order" name="order_id">
+                                <option value="">Select an order (if applicable)</option>
+                                {% for order in orders %}
+                                <option value="{{ order.id }}">Order #{{ order.order_number }} - {{ order.product_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Send Message
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Support Information -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h6 class="card-title">Support Information</h6>
+                    <p class="card-text">
+                        <i class="fas fa-clock"></i> Support Hours: Monday - Friday, 9:00 AM - 6:00 PM<br>
+                        <i class="fas fa-phone"></i> Phone: +1 (555) 123-4567<br>
+                        <i class="fas fa-envelope"></i> Email: support@alumilol.com
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

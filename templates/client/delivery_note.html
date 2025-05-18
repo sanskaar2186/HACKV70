@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Delivery Note #{{ order.order_number }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .company-info {
+            margin-bottom: 30px;
+        }
+        .delivery-details {
+            margin-bottom: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f5f5f5;
+        }
+        .signature {
+            margin-top: 50px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>DELIVERY NOTE</h1>
+    </div>
+
+    <div class="company-info">
+        <h2>Alumilol Manufacturing</h2>
+        <p>123 Business Street<br>
+        City, State 12345<br>
+        Phone: (555) 123-4567<br>
+        Email: shipping@alumilol.com</p>
+    </div>
+
+    <div class="delivery-details">
+        <p><strong>Delivery Note Number:</strong> {{ order.order_number }}</p>
+        <p><strong>Date:</strong> {{ order.created_at.strftime('%Y-%m-%d') }}</p>
+        <p><strong>Client:</strong> {{ order.client_name }}</p>
+        <p><strong>Delivery Address:</strong><br>
+        {{ order.client_address }}</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Unit</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ order.product_name }}</td>
+                <td>{{ order.quantity }}</td>
+                <td>Pieces</td>
+                <td>{{ order.notes or 'N/A' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="signature">
+        <p><strong>Received By:</strong> _______________________</p>
+        <p><strong>Date:</strong> _______________________</p>
+        <p><strong>Signature:</strong> _______________________</p>
+    </div>
+
+    <div class="footer">
+        <p>This delivery note serves as proof of delivery</p>
+        <p>Please inspect the goods upon delivery</p>
+        <p>Report any damages or discrepancies within 24 hours</p>
+    </div>
+</body>
+</html> 
