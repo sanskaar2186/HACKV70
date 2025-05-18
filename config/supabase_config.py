@@ -1,9 +1,12 @@
 from supabase import create_client, Client
 from flask import current_app
+import os
+import dotenv
 
+dotenv.load_dotenv()
 # Supabase configuration
-SUPABASE_URL = 'https://dgdvqnwmhgqgarwuxirj.supabase.co'
-SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRnZHZxbndtaGdxZ2Fyd3V4aXJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0MjI1MzksImV4cCI6MjA2Mjk5ODUzOX0.0m17nX308i9nd9h3TgJBq35nAdNI0Ro-9Jgdm49TwrI'
+SUPABASE_URL = os.getenv('SUPABASE_URL')
+SUPABASE_KEY = os.getenv('SUPABASE_KEY')
 
 try:
     # Initialize Supabase client

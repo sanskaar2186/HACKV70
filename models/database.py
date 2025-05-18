@@ -78,6 +78,16 @@ class Inventory:
         return response.data
 
     @staticmethod
+    def get_by_id(item_id):
+        response = supabase.table('inventory').select('*').eq('id', item_id).execute()
+        if response.data:
+            item = response.data[0]
+            item['quantity'] = int(item['quantity'])
+            item['reorder_level'] = int(item['reorder_level'])
+            return item
+        return None
+
+    @staticmethod
     def get_low_stock():
         # First get all inventory items
         response = supabase.table('inventory').select('*').execute()
@@ -86,8 +96,31 @@ class Inventory:
                 if int(item['quantity']) < int(item['reorder_level'])]
 
     @staticmethod
+    def create(data):
+        # Convert quantity and reorder_level to integers
+        data['quantity'] = int(data['quantity'])
+        data['reorder_level'] = int(data['reorder_level'])
+        response = supabase.table('inventory').insert(data).execute()
+        return response.data[0] if response.data else None
+
+    @staticmethod
+    def update(item_id, data):
+        # Convert quantity and reorder_level to integers if present
+        if 'quantity' in data:
+            data['quantity'] = int(data['quantity'])
+        if 'reorder_level' in data:
+            data['reorder_level'] = int(data['reorder_level'])
+        response = supabase.table('inventory').update(data).eq('id', item_id).execute()
+        return response.data[0] if response.data else None
+
+    @staticmethod
     def update_quantity(item_id, quantity):
-        response = supabase.table('inventory').update({'quantity': quantity}).eq('id', item_id).execute()
+        response = supabase.table('inventory').update({'quantity': int(quantity)}).eq('id', item_id).execute()
+        return response.data[0] if response.data else None
+
+    @staticmethod
+    def delete(item_id):
+        response = supabase.table('inventory').delete().eq('id', item_id).execute()
         return response.data[0] if response.data else None
 
 class Machine:
@@ -107,8 +140,35 @@ class Machine:
         return response.data
 
     @staticmethod
+    def create(data):
+        # Handle empty datetime fields
+        if 'last_maintenance_date' in data and not data['last_maintenance_date']:
+            data['last_maintenance_date'] = None
+        if 'next_maintenance_date' in data and not data['next_maintenance_date']:
+            data['next_maintenance_date'] = None
+            
+        response = supabase.table('machines').insert(data).execute()
+        return response.data[0] if response.data else None
+
+    @staticmethod
+    def update(machine_id, data):
+        # Handle empty datetime fields
+        if 'last_maintenance_date' in data and not data['last_maintenance_date']:
+            data['last_maintenance_date'] = None
+        if 'next_maintenance_date' in data and not data['next_maintenance_date']:
+            data['next_maintenance_date'] = None
+            
+        response = supabase.table('machines').update(data).eq('id', machine_id).execute()
+        return response.data[0] if response.data else None
+
+    @staticmethod
     def update_status(machine_id, status):
         response = supabase.table('machines').update({'status': status}).eq('id', machine_id).execute()
+        return response.data[0] if response.data else None
+
+    @staticmethod
+    def delete(machine_id):
+        response = supabase.table('machines').delete().eq('id', machine_id).execute()
         return response.data[0] if response.data else None
 
 class WorkerShift:
@@ -173,11 +233,51 @@ class KPIMetrics:
 
 class Report:
     @staticmethod
-    def get_reports():
+    def get_all():
         response = supabase.table('reports').select('*').order('created_at', desc=True).execute()
         return response.data
 
     @staticmethod
-    def save_report(data):
-        response = supabase.table('reports').insert(data).execute()
-        return response.data[0] if response.data else None 
+    def get_by_id(report_id):
+        response = supabase.table('reports').select('*').eq('id', report_id).execute()
+        return response.data[0] if response.data else None
+
+    @staticmethod
+    def create(data):
+        # Ensure all required fields are present
+        report_data = {
+            'type': data.get('type'),
+            'start_date': data.get('start_date'),
+            'end_date': data.get('end_date'),
+            'status': 'completed',
+            'created_at': datetime.now().isoformat()
+        }
+        response = supabase.table('reports').insert(report_data).execute()
+        return response.data[0] if response.data else None
+
+    @staticmethod
+    def update(report_id, data):
+        response = supabase.table('reports').update(data).eq('id', report_id).execute()
+        return response.data[0] if response.data else None
+
+    @staticmethod
+    def delete(report_id):
+        response = supabase.table('reports').delete().eq('id', report_id).execute()
+        return response.data[0] if response.data else None
+
+    @staticmethod
+    def generate_report(report_type, start_date=None, end_date=None):
+        # Validate report type
+        if report_type not in ['production', 'inventory', 'machines']:
+            return None
+
+        # Create report record
+        report_data = {
+            'type': report_type,
+            'start_date': start_date,
+            'end_date': end_date,
+            'status': 'completed',
+            'created_at': datetime.now().isoformat()
+        }
+        
+        return Report.create(report_data) 
