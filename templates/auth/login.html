@@ -11,25 +11,33 @@
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
             overflow-x: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .login-container {
             position: relative;
             z-index: 10;
-            background-color: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            padding: 2.5rem;
+            background-color: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.3);
+            padding: 3rem;
             transform: translateY(20px);
             opacity: 0;
-            transition: all 0.6s ease-out;
+            transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            border: 1px solid rgba(255, 255, 255, 0.18);
         }
         
         .floating-shapes {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
@@ -40,74 +48,97 @@
         
         .shape {
             position: absolute;
-            background-color: rgba(255, 255, 255, 0.1);
+            background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
             border-radius: 50%;
             z-index: 1;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .login-title {
-            background: linear-gradient(90deg, #667eea, #764ba2);
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             margin-bottom: 1.5rem;
             opacity: 0;
             transform: translateY(-20px);
-            transition: all 0.6s ease-out;
+            transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
             font-weight: 800;
+            font-size: 2.5rem;
+            letter-spacing: -0.5px;
+            text-align: center;
+            margin-top: 0;
         }
         
         .login-subtitle {
             opacity: 0;
             transform: translateY(-10px);
-            transition: all 0.6s ease-out;
+            transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
             transition-delay: 0.1s;
+            font-size: 1.1rem;
+            color: #4b5563;
+            text-align: center;
+            margin-bottom: 2rem;
         }
         
         .input-field {
             position: relative;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.8rem;
             transform: translateX(-20px);
             opacity: 0;
-            transition: all 0.5s ease-out;
+            transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
         }
         
         .input-field:nth-child(2) {
-            transition-delay: 0.1s;
+            transition-delay: 0.15s;
         }
         
         input {
             width: 100%;
-            padding: 12px 16px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 1rem;
+            padding: 16px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1.1rem;
             transition: all 0.3s;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            background-color: rgba(255, 255, 255, 0.8);
+            box-sizing: border-box;
         }
         
         input:focus {
-            border-color: #764ba2;
+            border-color: #2575fc;
             outline: none;
-            box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.25);
+            box-shadow: 0 0 0 4px rgba(37, 117, 252, 0.2);
+            background-color: #fff;
+        }
+        
+        input::placeholder {
+            color: #9ca3af;
+            font-weight: 400;
         }
         
         .submit-btn {
-            background: linear-gradient(90deg, #667eea, #764ba2);
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
+            padding: 16px 28px;
+            border-radius: 12px;
+            font-weight: 700;
             cursor: pointer;
             width: 100%;
-            font-size: 1rem;
-            transition: all 0.3s;
+            font-size: 1.1rem;
+            transition: all 0.4s;
             opacity: 0;
             transform: translateY(10px);
             transition-delay: 0.3s;
             position: relative;
             overflow: hidden;
+            letter-spacing: 0.5px;
+            box-shadow: 0 10px 25px -5px rgba(37, 117, 252, 0.5);
+            margin-top: 1rem;
         }
         
         .submit-btn::before {
@@ -117,8 +148,8 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: all 0.5s;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: all 0.6s;
         }
         
         .submit-btn:hover::before {
@@ -126,17 +157,19 @@
         }
         
         .submit-btn:hover {
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            transform: translateY(-2px);
+            box-shadow: 0 15px 25px -5px rgba(37, 117, 252, 0.6);
+            transform: translateY(-3px);
         }
         
         .alert {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 2rem;
             opacity: 0;
             transform: scale(0.95);
-            transition: all 0.6s ease-out;
+            transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+            font-weight: 500;
+            text-align: center;
         }
         
         .alert-error {
@@ -152,26 +185,27 @@
         }
         
         .pulse {
-            animation: pulse 2s infinite;
+            animation: pulse 2.5s infinite;
         }
         
         @keyframes pulse {
             0% {
-                box-shadow: 0 0 0 0 rgba(118, 75, 162, 0.4);
+                box-shadow: 0 0 0 0 rgba(37, 117, 252, 0.5);
             }
             70% {
-                box-shadow: 0 0 0 10px rgba(118, 75, 162, 0);
+                box-shadow: 0 0 0 15px rgba(37, 117, 252, 0);
             }
             100% {
-                box-shadow: 0 0 0 0 rgba(118, 75, 162, 0);
+                box-shadow: 0 0 0 0 rgba(37, 117, 252, 0);
             }
         }
         
         .register-link {
-            color: #764ba2;
+            color: #4f46e5;
             font-weight: 600;
             text-decoration: none;
             position: relative;
+            transition: all 0.3s;
         }
         
         .register-link::after {
@@ -181,22 +215,83 @@
             height: 2px;
             bottom: -2px;
             left: 0;
-            background: linear-gradient(90deg, #667eea, #764ba2);
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
             transform: scaleX(0);
             transform-origin: bottom right;
-            transition: transform 0.3s ease-out;
+            transition: transform 0.4s ease-out;
+        }
+        
+        .register-link:hover {
+            color: #6a11cb;
         }
         
         .register-link:hover::after {
             transform: scaleX(1);
             transform-origin: bottom left;
         }
+        
+        /* Additional enhancements */
+        .min-h-screen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 20px;
+        }
+        
+        .max-w-md {
+            max-width: 28rem;
+            width: 100%;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        @media (max-width: 640px) {
+            .login-container {
+                padding: 2rem;
+                border-radius: 16px;
+            }
+            
+            .login-title {
+                font-size: 2rem;
+            }
+        }
+        
+        /* Cool background animation */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(-45deg, #6a11cb, #2575fc, #003cc5, #5b21b6);
+            background-size: 400% 400%;
+            animation: gradientBackground 15s ease infinite;
+        }
+        
+        @keyframes gradientBackground {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="bg-animation"></div>
     <div class="floating-shapes" id="particles"></div>
     
-    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="min-h-screen flex items-center justify-center">
         <div class="max-w-md w-full">
             <div class="login-container">
                 <div>
@@ -251,10 +346,10 @@
                 const size = Math.random() * 100 + 50;
                 const shape = document.createElement('div');
                 shape.classList.add('shape');
-                shape.style.width = `${size}px`;
-                shape.style.height = `${size}px`;
-                shape.style.left = `${Math.random() * 100}%`;
-                shape.style.top = `${Math.random() * 100}%`;
+                shape.style.width = size + 'px';
+                shape.style.height = size + 'px';
+                shape.style.left = Math.random() * 100 + '%';
+                shape.style.top = Math.random() * 100 + '%';
                 shape.style.opacity = Math.random() * 0.3;
                 
                 container.appendChild(shape);

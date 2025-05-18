@@ -110,6 +110,12 @@
                 </div>
 
                 <!-- Production Overview -->
+                <div class="mt-8">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Production Overview</h2>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <canvas id="productionChart" height="300"></canvas>
+                    </div>
+                </div>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                     <!-- Production Lines Status -->
                     <div class="bg-white rounded-lg shadow">
@@ -254,5 +260,57 @@
         // Update dashboard every 30 seconds
         setInterval(updateDashboard, 30000);
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the canvas element
+            const ctx = document.getElementById('productionChart').getContext('2d');
+            
+            // Sample data - replace with your actual data from backend
+            const productionData = {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [
+                    {
+                        label: 'Work Orders',
+                        data: [12, 19, 15, 8, 22, 14],
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Completed Orders',
+                        data: [7, 11, 13, 8, 16, 11],
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2,
+                        tension: 0.4
+                    }
+                ]
+            };
+            
+            // Create the chart
+            new Chart(ctx, {
+                type: 'line',
+                data: productionData,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Monthly Production Overview'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+    </script>
 </body>
-</html> 
+</html>
