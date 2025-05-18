@@ -306,30 +306,41 @@
             speakResponse(response);
         }, 700);
     }
-    function getAIResponse(message) {
-        const lower = message.toLowerCase();
-        if (lower.includes('how many units produced')) {
-            return 'Today, 1,250 units have been produced across all shifts.';
-        } else if (lower.includes('approve dispatch of order')) {
-            return 'Order #D125 has been approved for dispatch.';
-        } else if (lower.includes('pending maintenance')) {
-            return 'There are 3 pending maintenance issues: Conveyor Belt 2, Furnace 1, and Cooling System.';
-        } else if (lower.includes('shift-wise production report')) {
-            return 'Shift-wise report: Shift A - 400 units, Shift B - 420 units, Shift C - 430 units.';
-        } else if (lower.includes('assign job j456')) {
-            return 'Job J456 has been assigned to Operator Mohan.';
-        } else if (lower.includes('plan maintenance for m1')) {
-            return 'Maintenance for Machine M1 has been scheduled for next Monday.';
-        } else if (lower.includes('production status')) {
-            return 'Production is running at 85% capacity today.';
-        } else if (lower.includes('inventory')) {
-            return 'Current inventory is at 65% stock level.';
-        } else if (lower.includes('quality')) {
-            return 'Quality compliance is at 98.5% for this month.';
-        } else {
-            return "I'm sorry, I didn't understand that. Could you please rephrase or try one of the quick actions above?";
-        }
+   function getAIResponse(message) {
+    if (!message || typeof message !== 'string') {
+        return "Please enter a valid query.";
     }
+
+    const lower = message.trim().toLowerCase();
+
+    if (lower.includes('hi') || lower.includes('hello')) {
+        return 'Hi there! How can I assist you on the shop floor today?';
+    } else if (lower.includes('how are you')) {
+        return "I'm just a bot, but I'm ready to help! How can I assist you?";
+    } else if (lower.includes('how many units produced')) {
+        return 'Today, 1,250 units have been produced across all shifts.';
+    } else if (lower.includes('approve dispatch of order')) {
+        return 'Order #D125 has been approved for dispatch.';
+    } else if (lower.includes('pending maintenance')) {
+        return 'There are 3 pending maintenance issues: Conveyor Belt 2, Furnace 1, and Cooling System.';    
+    } else if (lower.includes('shift-wise production report')) {
+        return 'Shift-wise report: Shift A - 400 units, Shift B - 420 units, Shift C - 430 units.';
+    } else if (lower.includes('assign job j456')) {
+        return 'Job J456 has been assigned to Operator Mohan.';
+    } else if (lower.includes('plan maintenance for m1')) {
+        return 'Maintenance for Machine M1 has been scheduled for next Monday.';
+    } else if (lower.includes('production status')) {
+        return 'Production is running at 85% capacity today.';
+    } else if (lower.includes('inventory')) {
+        return 'Current inventory is at 65% stock level.';
+    } else if (lower.includes('quality')) {
+        return 'Quality compliance is at 98.5% for this month.';
+    } else {
+        return "I'm sorry, I didn't understand that. Try asking about 'production status', 'inventory level', or 'quality compliance'.";
+    }
+}
+
+    
     function speakResponse(text) {
         if ('speechSynthesis' in window) {
             const utterance = new SpeechSynthesisUtterance(text);
